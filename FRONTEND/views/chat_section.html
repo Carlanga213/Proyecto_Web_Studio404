@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Stvdio404 • Chat</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+    <!-- Optional icons for small UI glyphs -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Your global styles -->
+    <link rel="stylesheet" href="/assets/style.css">
+
+    <style>
+      /* Avatars and small media */
+      .user-img { width: 38px; height: 38px; object-fit: cover; border-radius: .5rem; }
+      .avatar-sm { width: 32px; height: 32px; object-fit: cover; border-radius: 50%; }
+      .avatar-md { width: 44px; height: 44px; object-fit: cover; border-radius: 50%; }
+
+      /* Layout sizing */
+      .chat-wrapper { height: calc(100vh - 56px); } /* 56px default navbar height */
+      .chat-sidebar { height: 100%; overflow: auto; }
+      .chat-main { height: 100%; display: flex; flex-direction: column; }
+      .chat-scroll { flex: 1 1 auto; overflow: auto; padding: 1rem; background: #f6f7f8; }
+
+      /* Conversation items */
+      .chat-item { border-radius: .75rem; transition: background-color .15s ease; }
+      .chat-item.active { background: rgba(13,110,253,.08); }
+      .chat-item:hover { background: rgba(108,117,125,.08); }
+      .chat-snippet { color: #6c757d; }
+
+      /* Bubbles */
+      .bubble { max-width: 75ch; padding: .6rem .8rem; border-radius: 1rem; }
+      .bubble-in { background: #ffffff; border: 1px solid #e9ecef; border-top-left-radius: .4rem; }
+      .bubble-out { background: #0d6efd; color: #fff; border-top-right-radius: .4rem; }
+      .msg-time { font-size: .75rem; color: #8a8f98; }
+
+      /* Composer */
+      .composer { border-top: 1px solid #e9ecef; background: #fff; }
+      .composer .form-control { border-radius: 999px; }
+      .btn-circle { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+
+      /* Utilities */
+      .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+      .status-online { background: #22c55e; }
+      .status-away { background: #a1a1aa; }
+
+      @media (max-width: 991.98px) {
+        .chat-wrapper { height: calc(100vh - 56px); }
+      }
+    </style>
+  </head>
+
+  <body id="chatRoot" class="bg-light">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-sm navbar-dark bg-dark sticky-top">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="#">
+          <img src="" alt="Nebula logo" class="me-2 user-img">
+          <span class="fw-semibold">Stvdio404</span>
+        </a>
+
+        <button class="navbar-toggler" type="button">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse show">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Messages</a>
+            </li>
+          </ul>
+
+          <form class="d-none d-md-flex w-50">
+            <input class="form-control me-2" type="search" placeholder="Search Stvdio404" aria-label="Search">
+            <button class="btn btn-outline-light" type="button">Search</button>
+          </form>
+
+          <div class="ms-3 d-flex align-items-center gap-2">
+            <a class="btn btn-primary" href="#">New chat</a>
+            <img class="user-img" src="" alt="Profile">
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- CHAT LAYOUT -->
+    <main class="container-fluid chat-wrapper">
+      <div class="row h-100 g-0">
+        <!-- LEFT: CONVERSATIONS -->
+        <aside class="col-12 col-lg-4 col-xl-3 border-end bg-white">
+          <div class="chat-sidebar p-3">
+            <!-- Current user -->
+            <div class="d-flex align-items-center mb-3">
+              <img src="" class="avatar-md me-2" alt="You">
+              <div>
+                <div class="fw-semibold">Alex Chen</div>
+                <div class="small"><span class="status-dot status-online me-1"></span> Online</div>
+              </div>
+              <div class="ms-auto">
+                <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-three-dots"></i></button>
+              </div>
+            </div>
+
+            <!-- Search contacts -->
+            <div class="input-group mb-3">
+              <span class="input-group-text"><i class="bi bi-search"></i></span>
+              <input type="text" class="form-control" placeholder="Search contacts">
+            </div>
+
+            <!-- Conversations list -->
+            <div class="d-flex flex-column gap-1">
+              <!-- Active -->
+              <a href="#" class="text-decoration-none text-reset">
+                <div class="chat-item active p-2 d-flex align-items-center">
+                  <div class="position-relative me-2">
+                    <img src="" class="avatar-md" alt="Emily Johnson">
+                    <span class="position-absolute bottom-0 end-0 translate-middle p-1 bg-success border border-white rounded-circle"></span>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center">
+                      <div class="fw-semibold me-auto">Emily Johnson</div>
+                      <small class="text-primary">10:42 AM</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <div class="chat-snippet small text-truncate me-2" style="max-width: 14rem;">Hey Alex, do you have the latest...</div>
+                      <span class="badge text-bg-danger">2</span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Item -->
+              <a href="#" class="text-decoration-none text-reset">
+                <div class="chat-item p-2 d-flex align-items-center">
+                  <div class="position-relative me-2">
+                    <img src="" class="avatar-md" alt="Benjamin Carter">
+                    <span class="position-absolute bottom-0 end-0 translate-middle p-1 bg-secondary border border-white rounded-circle"></span>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center">
+                      <div class="fw-semibold me-auto">Benjamin Carter</div>
+                      <small class="text-muted">Yesterday</small>
+                    </div>
+                    <div class="chat-snippet small text-truncate">Perfect, thanks for the update</div>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Item -->
+              <a href="#" class="text-decoration-none text-reset">
+                <div class="chat-item p-2 d-flex align-items-center">
+                  <div class="position-relative me-2">
+                    <img src="" class="avatar-md" alt="Olivia Rodriguez">
+                    <span class="position-absolute bottom-0 end-0 translate-middle p-1 bg-success border border-white rounded-circle"></span>
+                  </div>
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-items-center">
+                      <div class="fw-semibold me-auto">Olivia Rodriguez</div>
+                      <small class="text-muted">9:15 AM</small>
+                    </div>
+                    <div class="chat-snippet small text-truncate">Let's catch up later this week</div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- RIGHT: CHAT -->
+        <section class="col-12 col-lg-8 col-xl-9">
+          <div class="chat-main">
+            <!-- Chat header — notice no call or video actions -->
+            <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom bg-white">
+              <div class="d-flex align-items-center">
+                <div class="position-relative me-2">
+                  <img src="" class="avatar-md" alt="Emily Johnson">
+                  <span class="position-absolute bottom-0 end-0 translate-middle p-1 bg-success border border-white rounded-circle"></span>
+                </div>
+                <div>
+                  <div class="fw-semibold">Emily Johnson</div>
+                  <small class="text-success">Online</small>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm btn-outline-secondary" type="button" aria-label="Search in conversation">
+                  <i class="bi bi-search"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-secondary" type="button" aria-label="More">
+                  <i class="bi bi-three-dots"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Messages -->
+            <div class="chat-scroll">
+              <!-- Incoming -->
+              <div class="d-flex align-items-end gap-2 mb-3">
+                <img src="" class="avatar-sm" alt="Emily Johnson">
+                <div>
+                  <div class="bubble bubble-in">
+                    Hey Alex, do you have the latest project report? I need to review it before the meeting.
+                  </div>
+                  <div class="msg-time mt-1">10:40 AM</div>
+                </div>
+              </div>
+
+              <!-- Outgoing -->
+              <div class="d-flex align-items-end gap-2 justify-content-end mb-3">
+                <div class="text-end">
+                  <div class="bubble bubble-out">
+                    Hi Emily! Yes, I just finished it. Let me send it over.
+                  </div>
+                  <div class="msg-time mt-1">10:41 AM</div>
+                </div>
+                <img src="" class="avatar-sm" alt="Alex Chen">
+              </div>
+
+              <!-- Incoming -->
+              <div class="d-flex align-items-end gap-2 mb-3">
+                <img src="" class="avatar-sm" alt="Emily Johnson">
+                <div>
+                  <div class="bubble bubble-in">
+                    Great, thank you
+                  </div>
+                  <div class="msg-time mt-1">10:42 AM</div>
+                </div>
+              </div>
+
+              <!-- Typing indicator -->
+              <div class="d-flex align-items-end gap-2">
+                <img src="" class="avatar-sm" alt="Alex Chen">
+                <div class="bubble bubble-out">
+                  <span class="me-1">●</span><span class="me-1">●</span><span>●</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Composer -->
+            <div class="composer px-3 py-3">
+              <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-outline-secondary btn-circle" type="button" aria-label="Emoji">
+                  <i class="bi bi-emoji-smile"></i>
+                </button>
+                <button class="btn btn-outline-secondary btn-circle" type="button" aria-label="Attach">
+                  <i class="bi bi-paperclip"></i>
+                </button>
+                <input type="text" class="form-control" placeholder="Type a message">
+                <button class="btn btn-primary btn-circle" type="button" aria-label="Send">
+                  <i class="bi bi-send"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="py-3"></footer>
+  </body>
+</html>

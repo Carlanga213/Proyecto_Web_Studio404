@@ -1,0 +1,85 @@
+[
+  {
+    "id": 1,
+    "postId": 6,
+    "parentId": null,
+    "author": "aurora",
+    "body": "Heyyy Just checking",
+    "createdAt": "2025-11-17T23:01:13.857Z",
+    "likes": 2,
+    "likedBy": [
+      "aurora",
+      "Katy"
+    ]
+  },
+  {
+    "id": 2,
+    "postId": 6,
+    "parentId": 1,
+    "author": "aurora",
+    "body": "This works??",
+    "createdAt": "2025-11-17T23:01:20.849Z",
+    "likes": 2,
+    "likedBy": [
+      "aurora",
+      "Katy"
+    ]
+  },
+  {
+    "id": 3,
+    "postId": 8,
+    "parentId": null,
+    "author": "aurora",
+    "body": "that shit is pretty cool",
+    "createdAt": "2025-11-19T21:49:07.110Z",
+    "likes": 1,
+    "likedBy": [
+      "Katy"
+    ]
+  },
+  {
+    "id": 4,
+    "postId": 7,
+    "parentId": null,
+    "author": "aurora",
+    "body": "I love himmmmmmm",
+    "createdAt": "2025-11-19T21:49:19.684Z",
+    "likes": 0,
+    "likedBy": []
+  },
+  {
+    "id": 5,
+    "postId": 10,
+    "parentId": null,
+    "author": "aurora",
+    "body": "Lowkey mine is walking into Blockbuster on a Friday night, lights kinda yellow, AC freezing, and spending 40 minutes picking a movie just to rewatch the same animated one for the 12th time",
+    "createdAt": "2025-11-20T01:31:09.570Z",
+    "likes": 2,
+    "likedBy": [
+      "Katy",
+      "aurora"
+    ]
+  },
+  {
+    "id": 6,
+    "postId": 9,
+    "parentId": null,
+    "author": "aurora",
+    "body": "Bro have you seen the Internet Mysteries iceberg on YouTube? The deeper tiers feel like lore humans were not supposed to unlock. By the time it gets to lost media and cursed videos I can literally feel my room getting colder",
+    "createdAt": "2025-11-20T01:32:08.326Z",
+    "likes": 0,
+    "likedBy": []
+  },
+  {
+    "id": 7,
+    "postId": 10,
+    "parentId": 5,
+    "author": "Katy",
+    "body": "idk",
+    "createdAt": "2025-11-20T01:53:16.498Z",
+    "likes": 1,
+    "likedBy": [
+      "aurora"
+    ]
+  }
+]

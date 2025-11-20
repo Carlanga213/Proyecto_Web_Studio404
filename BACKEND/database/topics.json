@@ -1,0 +1,119 @@
+[
+  {
+    "id": 1,
+    "name": "studenthacks",
+    "title": "Study hacks and finals survival",
+    "description": "Shortcuts, planners and honest advice to survive exams without burning out.",
+    "createdBy": "system",
+    "members": []
+  },
+  {
+    "id": 2,
+    "name": "campuslife",
+    "title": "Campus life IRL",
+    "description": "Events, clubs, stories and the daily chaos of being on campus.",
+    "createdBy": "system",
+    "members": []
+  },
+  {
+    "id": 3,
+    "name": "devlife",
+    "title": "Dev life and side projects",
+    "description": "Code drops, tools and screenshots of the apps you are building after class.",
+    "createdBy": "system",
+    "members": []
+  },
+  {
+    "id": 4,
+    "name": "kpop",
+    "title": "K pop corner",
+    "description": "Comebacks, stages, fancams and all the love for your groups.",
+    "createdBy": "aurora",
+    "members": []
+  },
+  {
+    "id": 5,
+    "name": "study",
+    "title": "Study corner",
+    "description": "Timetables, note setups and everything that helps you stay on track.",
+    "createdBy": "system",
+    "members": []
+  },
+  {
+    "id": 6,
+    "name": "memes",
+    "title": "Memes and inside jokes",
+    "description": "Relatable chaos from classes, projects and everyday life.",
+    "createdBy": "system",
+    "members": [
+      "aurora",
+      "Katy"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "kpopi<3",
+    "title": "kpopi",
+    "description": "Private chaos zone for ult talks, bias rants and random screenshots.",
+    "createdBy": "Katy",
+    "members": [
+      "Katy"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "mental-health",
+    "title": "Mental health check in",
+    "description": "",
+    "createdBy": "system",
+    "members": [
+      "aurora"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "aesthetic",
+    "title": "Desk setups",
+    "description": "",
+    "createdBy": "system",
+    "members": [
+      "aurora"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "media",
+    "title": "True crime and shows",
+    "description": "",
+    "createdBy": "system",
+    "members": []
+  },
+  {
+    "id": 11,
+    "name": "music",
+    "title": "Music recs",
+    "description": "",
+    "createdBy": "system",
+    "members": [
+      "aurora"
+    ]
+  },
+  {
+    "id": 12,
+    "name": "self-improvement",
+    "title": "Habits and self improvement",
+    "description": "",
+    "createdBy": "system",
+    "members": []
+  },
+  {
+    "id": 13,
+    "name": "childhood",
+    "title": "childhood",
+    "description": "",
+    "createdBy": "Katy",
+    "members": [
+      "Katy"
+    ]
+  }
+]
