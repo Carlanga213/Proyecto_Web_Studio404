@@ -6,6 +6,7 @@ const posts = require('../controllers/posts_controller')
 const comments = require('../controllers/comments_controller')
 const topics = require('../controllers/topics_controller')
 const auth = require('../controllers/auth_controller')
+const profile = require('../controllers/profile_controller')
 
 // Auth
 router.post('/auth/register', auth.register)
@@ -41,5 +42,13 @@ router.post('/topics', topics.create)
 router.put('/topics/:id', topics.update)
 router.post('/topics/:id/leave', topics.leave)
 router.delete('/topics/:id', topics.remove)
+
+
+//Luis Cacho 
+// Profile CRUD
+router.get('/profiles/me', profile.getMe)
+router.put('/profiles/me', profile.updateMe)
+router.delete('/profiles/me', profile.deleteMe)
+router.get('/profiles', profile.listAll)
 
 module.exports = router

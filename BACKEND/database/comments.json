@@ -81,5 +81,79 @@
     "likedBy": [
       "aurora"
     ]
+  },
+  {
+    "id": 8,
+    "postId": 8,
+    "parentId": null,
+    "author": "LuisCacho",
+    "body": "yeaaa",
+    "createdAt": "2025-11-23T01:48:43.121Z",
+    "likes": 0,
+    "likedBy": []
+  },
+  {
+    "id": 9,
+    "postId": 11,
+    "parentId": null,
+    "author": "LuisCacho",
+    "body": "Hola",
+    "createdAt": "2025-11-25T20:49:57.847Z",
+    "likes": 1,
+    "likedBy": [
+      "LuisCacho"
+    ]
+  },
+  {
+    "id": 10,
+    "postId": 11,
+    "parentId": 9,
+    "author": "LuisCacho",
+    "body": "Mundo",
+    "createdAt": "2025-11-25T20:50:06.537Z",
+    "likes": 1,
+    "likedBy": [
+      "LuisCacho"
+    ]
+  },
+  {
+    "id": 11,
+    "postId": 11,
+    "parentId": null,
+    "body": "hola",
+    "createdAt": "2025-11-25T21:31:14.839Z",
+    "likes": 0,
+    "likedBy": [],
+    "avatarUrl": null
+  },
+  {
+    "id": 12,
+    "postId": 11,
+    "parentId": null,
+    "author": "Katy",
+    "body": "hola",
+    "likes": 0,
+    "likedBy": [],
+    "createdAt": "2025-11-25T21:35:45.811Z"
+  },
+  {
+    "id": 13,
+    "postId": 11,
+    "parentId": 10,
+    "author": "Cachito",
+    "body": "No manches noob",
+    "likes": 0,
+    "likedBy": [],
+    "createdAt": "2025-11-25T21:36:48.516Z"
+  },
+  {
+    "id": 14,
+    "postId": 11,
+    "parentId": null,
+    "author": "Cachito",
+    "body": "Que padre post",
+    "likes": 0,
+    "likedBy": [],
+    "createdAt": "2025-11-25T22:00:25.469Z"
   }
 ]

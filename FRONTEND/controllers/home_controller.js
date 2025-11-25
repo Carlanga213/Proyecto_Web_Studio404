@@ -4,13 +4,16 @@ let allPosts = []
 let myTopics = []
 let joinedTopics = []
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   loadPosts()
   loadMyTopics()
   loadJoinedTopics()
   setupCommunitiesUi()
   setupTopicToggles()
   setupTopicJoinsFromBrowse()
+
+  // CARGAR AVATAR DEL USUARIO EN EL COMPOSER
+  await loadComposerAvatar()
 })
 
 // POSTS FEED
@@ -780,4 +783,28 @@ function escapeHtml(str) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+}
+
+async function loadComposerAvatar() {
+  if (!CURRENT_USER || CURRENT_USER === 'guest') return
+
+  try {
+    const user = getStoredUser()
+    const res = await fetch(`${API_URL}/profiles/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': String(user?.id || '')
+      }
+    })
+    const data = await res.json()
+    if (data.ok && data.profile?.avatarUrl) {
+      const avatarImg = document.getElementById('composerUserAvatar')
+      if (avatarImg) {
+        avatarImg.src = data.profile.avatarUrl
+      }
+    }
+  } catch (err) {
+    console.error('Error loading composer avatar', err)
+  }
 }

@@ -5,6 +5,9 @@ const path = require('path')
 const app = express()
 const PORT = 3000
 
+// Aumentar límite de JSON para imágenes en base64
+app.use(express.json({ limit: '50mb' }))
+
 // parse JSON body
 app.use(express.json())
 

@@ -37,7 +37,9 @@
     "title": "Study corner",
     "description": "Timetables, note setups and everything that helps you stay on track.",
     "createdBy": "system",
-    "members": []
+    "members": [
+      "LuisCacho"
+    ]
   },
   {
     "id": 6,
@@ -114,6 +116,16 @@
     "createdBy": "Katy",
     "members": [
       "Katy"
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Topis",
+    "title": "wwda",
+    "description": "",
+    "createdBy": "LuisCacho",
+    "members": [
+      "LuisCacho"
     ]
   }
 ]

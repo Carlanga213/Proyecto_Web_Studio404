@@ -3,6 +3,11 @@
 let currentPostId = null
 let allComments = []
 
+// AVATAR HELPERS
+const PLACEHOLDER_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23999'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/%3E%3C/svg%3E"
+
+let currentUserAvatarUrl = null
+
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search)
   const idParam = params.get('id')
@@ -21,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   currentPostId = parsed
 
   setCurrentUserLabel()
+  loadCurrentUserAvatar()  // <-- AGREGAR ESTA LÍNEA
   loadPost()
   loadComments()
   setupComposer()
@@ -210,7 +216,7 @@ function renderCommentRecursive(comment, byParent, level) {
   const likedByUser =
     Array.isArray(comment.likedBy) && comment.likedBy.includes(CURRENT_USER)
 
-  const likeIconClass = likedByUser ? 'bi-heart-fill' : 'bi-heart'
+  const likeIconClass = likedByUser ? 'bi-heart-fill text-danger' : 'bi-heart'
 
   const children = byParent.get(comment.id) || []
   const childrenHtml = children
@@ -221,9 +227,21 @@ function renderCommentRecursive(comment, byParent, level) {
   const body = escapeHtml(comment.body || '')
   const created = formatDateShort(comment.createdAt)
 
+  // Usar avatarUrl del comentario o placeholder
+  const avatarUrl = comment.avatarUrl && comment.avatarUrl.trim() 
+    ? comment.avatarUrl 
+    : PLACEHOLDER_AVATAR
+
   return `
     <div class="${indentClass} mb-3" data-comment-id="${comment.id}">
-      <div class="d-flex mb-1">
+      <div class="d-flex mb-1 gap-2">
+        <img 
+          src="${avatarUrl}" 
+          alt="${author}" 
+          class="rounded-circle" 
+          style="width: 32px; height: 32px; object-fit: cover; background-color: #f0f0f0;"
+          onerror="this.src='${PLACEHOLDER_AVATAR}'"
+        >
         <div class="flex-grow-1">
           <div class="d-flex align-items-center gap-2 small text-muted mb-1">
             <span class="fw-semibold">u/${author}</span>
@@ -491,4 +509,63 @@ function formatDateShort(value) {
   const d = new Date(value)
   if (Number.isNaN(d.getTime())) return ''
   return d.toLocaleString()
+}
+
+// Cargar avatar del usuario actual para el composer
+async function loadCurrentUserAvatar() {
+  if (!CURRENT_USER || CURRENT_USER === 'guest') {
+    setComposerAvatar(PLACEHOLDER_AVATAR)
+    return
+  }
+
+  try {
+    const user = getStoredUser()
+    const res = await fetch(`${API_URL}/profiles/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': String(user?.id || '')
+      }
+    })
+    const data = await res.json()
+    if (data.ok && data.profile?.avatarUrl) {
+      currentUserAvatarUrl = data.profile.avatarUrl
+      setComposerAvatar(data.profile.avatarUrl)
+    } else {
+      setComposerAvatar(PLACEHOLDER_AVATAR)
+    }
+  } catch (err) {
+    console.error('Error loading current user avatar', err)
+    setComposerAvatar(PLACEHOLDER_AVATAR)
+  }
+}
+
+function setComposerAvatar(url) {
+  const img = document.querySelector('.comment-avatar')
+  if (img) {
+    img.src = url
+    img.style.width = '40px'
+    img.style.height = '40px'
+    img.style.objectFit = 'cover'
+    img.style.backgroundColor = '#f0f0f0'
+    img.classList.add('rounded-circle')
+    img.onerror = function() {
+      this.src = PLACEHOLDER_AVATAR
+    }
+  }
+}
+
+// Obtener avatar por username para los comentarios
+async function getAvatarByUsername(username) {
+  if (!username) return PLACEHOLDER_AVATAR
+  try {
+    const res = await fetch(`${API_URL}/users/${username}/avatar`)
+    const data = await res.json()
+    if (data.ok && data.avatarUrl) {
+      return data.avatarUrl
+    }
+  } catch (err) {
+    console.error('Error getting avatar for', username, err)
+  }
+  return PLACEHOLDER_AVATAR
 }

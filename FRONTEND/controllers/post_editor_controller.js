@@ -3,15 +3,42 @@
 let availableTopics = []
 let editingPostId = null
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (!CURRENT_USER || CURRENT_USER === 'guest') {
     alert('Necesitas iniciar sesión para publicar')
     window.location.href = '/login.html'
     return
   }
 
+  // CARGAR AVATAR DEL USUARIO
+  await loadUserAvatar()
+
   initCreatePostPage()
 })
+
+async function loadUserAvatar() {
+  if (!CURRENT_USER || CURRENT_USER === 'guest') return
+
+  try {
+    const user = getStoredUser()
+    const res = await fetch(`${API_URL}/profiles/me`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Id': String(user?.id || '')
+      }
+    })
+    const data = await res.json()
+    if (data.ok && data.profile?.avatarUrl) {
+      const avatarImg = document.getElementById('composerUserAvatar')
+      if (avatarImg) {
+        avatarImg.src = data.profile.avatarUrl
+      }
+    }
+  } catch (err) {
+    console.error('Error loading user avatar', err)
+  }
+}
 
 async function initCreatePostPage() {
   setupStaticUi()
