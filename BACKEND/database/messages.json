@@ -26,5 +26,19 @@
         "createdAt": "2025-11-26T02:11:22.717Z"
       }
     ]
+  },
+  {
+    "id": 1764124286614,
+    "participants": [
+      "larquitoskool",
+      "personaje de relleno"
+    ],
+    "messages": [
+      {
+        "from": "larquitoskool",
+        "text": "hola",
+        "createdAt": "2025-11-26T02:31:26.614Z"
+      }
+    ]
   }
 ]
