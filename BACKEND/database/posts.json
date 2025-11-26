@@ -284,11 +284,14 @@
     "image": "",
     "authorDisplay": "u/larquitoskool",
     "createdAt": "25/11/2025, 17:47:03",
-    "likes": 1,
+    "likes": 2,
     "likedBy": [
-      "larquitoskool"
+      "larquitoskool",
+      "personaje de relleno"
     ],
-    "savedBy": [],
+    "savedBy": [
+      "personaje de relleno"
+    ],
     "tags": [],
     "commentsCount": 0
   }

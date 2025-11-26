@@ -132,3 +132,33 @@ exports.sendMessage = (req, res) => {
 
   res.json({ ok: true, message: newMessage })
 }
+
+exports.deleteConversation = (req, res) => {
+  const username = getUsername(req)
+  const targetUser = req.params.targetUser
+
+  if (!username) return res.status(401).json({ ok: false, error: 'User required' })
+
+  let allChats = readMessages()
+  
+  // Filtramos para EXCLUIR la conversación actual (así se borra)
+  const initialLength = allChats.length
+  allChats = allChats.filter(c => 
+    !(c.participants.includes(username) && c.participants.includes(targetUser))
+  )
+
+  // Guardamos los cambios
+  writeMessages(allChats)
+
+  // Notificar en tiempo real a ambos usuarios que el chat fue borrado
+  if (req.io) {
+    [username, targetUser].forEach(u => {
+      req.io.to(u).emit('chat_deleted', { 
+        deletedBy: username,
+        partner: u === username ? targetUser : username 
+      })
+    })
+  }
+
+  res.json({ ok: true })
+}

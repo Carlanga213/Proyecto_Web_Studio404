@@ -9,6 +9,7 @@ const auth = require('../controllers/auth_controller')
 const profile = require('../controllers/profile_controller')
 const chat = require('../controllers/chat_controller')
 
+
 // Auth
 router.post('/auth/register', auth.register)
 router.post('/auth/login', auth.login)
@@ -56,5 +57,7 @@ router.get('/profiles', profile.listAll)
 router.get('/chats', chat.listConversations)          // Listar conversaciones (Inbox)
 router.get('/chats/:targetUser', chat.getHistory)     // Ver mensajes con alguien
 router.post('/chats/:targetUser', chat.sendMessage)   // Enviar mensaje a alguien
+
+router.delete('/chats/:targetUser', chat.deleteConversation)
 
 module.exports = router
