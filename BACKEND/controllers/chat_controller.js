@@ -1,28 +1,7 @@
 // BACKEND/controllers/chat_controller.js
-const fs = require('fs')
-const path = require('path')
+const Chat = require('../models/Chat'); // Importamos el modelo
 
-const DB_PATH = path.join(__dirname, '..', 'database', 'messages.json')
-
-// Helper: Leer DB
-function readMessages() {
-  if (!fs.existsSync(DB_PATH)) {
-    fs.writeFileSync(DB_PATH, '[]', 'utf8')
-  }
-  const raw = fs.readFileSync(DB_PATH, 'utf8')
-  try {
-    return JSON.parse(raw)
-  } catch {
-    return []
-  }
-}
-
-// Helper: Escribir DB
-function writeMessages(data) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf8')
-}
-
-// Helper: Obtener usuario del request (Igual que en tus otros controladores)
+// Helper: Obtener usuario
 function getUsername(req) {
   const headerUser = req.headers['x-user']
   if (headerUser && typeof headerUser === 'string' && headerUser.trim() !== '') {
@@ -31,134 +10,137 @@ function getUsername(req) {
   return null
 }
 
-// GET /api/chats -> Lista de conversaciones recientes del usuario
-exports.listConversations = (req, res) => {
+// GET /api/chats
+exports.listConversations = async (req, res) => {
   const username = getUsername(req)
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
 
-  const allChats = readMessages()
-  
-  // Filtramos chats donde el usuario es participante
-  const myChats = allChats.filter(c => Array.isArray(c.participants) && c.participants.includes(username))
+  try {
+    // Buscamos chats donde el usuario sea participante
+    const chats = await Chat.find({ participants: username });
 
-  // Para cada chat, identificamos quién es el "otro" usuario para mostrarlo en el frontend
-  const previews = myChats.map(chat => {
-    const otherUser = chat.participants.find(p => p !== username) || username // Fallback si es chat consigo mismo
-    const lastMsg = chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : null
-    
-    return {
-      username: otherUser, // El frontend usará esto para pedir los detalles del perfil
-      lastMessage: lastMsg ? lastMsg.text : '',
-      timestamp: lastMsg ? lastMsg.createdAt : null
-    }
-  })
+    const previews = chats.map(chat => {
+      // Identificar al otro participante
+      const otherUser = chat.participants.find(p => p !== username) || username;
+      // Obtener último mensaje
+      const lastMsg = chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : null;
+      
+      return {
+        username: otherUser,
+        lastMessage: lastMsg ? lastMsg.text : '',
+        timestamp: lastMsg ? lastMsg.createdAt : null
+      }
+    });
 
-  res.json({ ok: true, conversations: previews })
+    res.json({ ok: true, conversations: previews });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error fetching chats' });
+  }
 }
 
-// GET /api/chats/:targetUser -> Obtener historial completo con un usuario específico
-exports.getHistory = (req, res) => {
+// GET /api/chats/:targetUser
+exports.getHistory = async (req, res) => {
   const username = getUsername(req)
   const targetUser = req.params.targetUser
   
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
 
-  const allChats = readMessages()
+  try {
+    // Buscamos el chat específico entre estos dos usuarios
+    const chat = await Chat.findOne({
+      participants: { $all: [username, targetUser] }
+    });
 
-  // Buscamos una conversación que tenga a AMBOS participantes
-  const chat = allChats.find(c => 
-    c.participants.includes(username) && 
-    c.participants.includes(targetUser)
-  )
+    if (!chat) {
+      return res.json({ ok: true, messages: [] });
+    }
 
-  if (!chat) {
-    // Si no existe, devolvemos array vacío, no es error
-    return res.json({ ok: true, messages: [] })
+    res.json({ ok: true, messages: chat.messages });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error fetching history' });
   }
-
-  res.json({ ok: true, messages: chat.messages })
 }
 
-// POST /api/chats/:targetUser -> Enviar mensaje
-exports.sendMessage = (req, res) => {
+// POST /api/chats/:targetUser
+exports.sendMessage = async (req, res) => {
   const username = getUsername(req)
   const targetUser = req.params.targetUser
   const { text } = req.body
 
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
-  if (!text || text.trim() === '') return res.status(400).json({ ok: false, error: 'Message cannot be empty' })
+  if (!text || text.trim() === '') return res.status(400).json({ ok: false, error: 'Message empty' })
 
-  let allChats = readMessages()
+  try {
+    // 1. Buscar chat existente
+    let chat = await Chat.findOne({
+      participants: { $all: [username, targetUser] }
+    });
 
-  let chatIndex = allChats.findIndex(c => 
-    c.participants.includes(username) && 
-    c.participants.includes(targetUser)
-  )
+    const newMessage = {
+      from: username,
+      text: text.trim(),
+      createdAt: new Date()
+    };
 
-  const newMessage = {
-    from: username,
-    text: text.trim(),
-    createdAt: new Date().toISOString()
-  }
-
-  if (chatIndex === -1) {
-    const newChat = {
-      id: Date.now(),
-      participants: [username, targetUser],
-      messages: [newMessage]
+    if (!chat) {
+      // 2. Si no existe, crear uno nuevo
+      chat = new Chat({
+        participants: [username, targetUser],
+        messages: [newMessage]
+      });
+    } else {
+      // 3. Si existe, agregar mensaje (push)
+      chat.messages.push(newMessage);
     }
-    allChats.push(newChat)
-  } else {
-    allChats[chatIndex].messages.push(newMessage)
+
+    await chat.save();
+
+    // Notificación Socket.IO
+    if (req.io) {
+      req.io.to(targetUser).emit('receive_message', {
+        message: newMessage,
+        chatWith: username
+      });
+      req.io.to(username).emit('receive_message', {
+        message: newMessage,
+        chatWith: targetUser
+      });
+    }
+
+    res.json({ ok: true, message: newMessage });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error sending message' });
   }
-
-  writeMessages(allChats)
-
-  // --- LÓGICA SOCKET.IO NUEVA ---
-  if (req.io) {
-    // 1. Enviar evento al DESTINATARIO (para que le aparezca el mensaje)
-    req.io.to(targetUser).emit('receive_message', {
-      message: newMessage,
-      chatWith: username // Para el destinatario, el chat es con el remitente
-    })
-
-    // 2. Enviar evento al REMITENTE (para sincronizar si tiene varias pestañas abiertas)
-    req.io.to(username).emit('receive_message', {
-      message: newMessage,
-      chatWith: targetUser
-    })
-  }
-  // ------------------------------
-
-  res.json({ ok: true, message: newMessage })
 }
 
-exports.deleteConversation = (req, res) => {
+// DELETE /api/chats/:targetUser
+exports.deleteConversation = async (req, res) => {
   const username = getUsername(req)
   const targetUser = req.params.targetUser
 
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
 
-  let allChats = readMessages()
-  
-  // Filtramos para EXCLUIR la conversación actual (así se borra)
-  const initialLength = allChats.length
-  allChats = allChats.filter(c => 
-    !(c.participants.includes(username) && c.participants.includes(targetUser))
-  )
+  try {
+    // Eliminar documento de la colección
+    await Chat.findOneAndDelete({
+      participants: { $all: [username, targetUser] }
+    });
 
-  // Guardamos los cambios
-  writeMessages(allChats)
+    if (req.io) {
+      [username, targetUser].forEach(u => {
+        req.io.to(u).emit('chat_deleted', { 
+          deletedBy: username,
+          partner: u === username ? targetUser : username 
+        })
+      });
+    }
 
-  // Notificar en tiempo real a ambos usuarios que el chat fue borrado
-  if (req.io) {
-    [username, targetUser].forEach(u => {
-      req.io.to(u).emit('chat_deleted', { 
-        deletedBy: username,
-        partner: u === username ? targetUser : username 
-      })
-    })
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ ok: false, error: 'Error deleting chat' });
   }
-
-  res.json({ ok: true })
 }
