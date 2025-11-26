@@ -30,14 +30,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function setupSocketConnection() {
   // Conectamos al mismo host donde está el front
-  socket = io('http://localhost:3000'); 
+  socket = io(); 
 
-  // Al conectar, nos unimos a nuestra "sala personal"
   socket.on('connect', () => {
     console.log('Connected to socket server');
     socket.emit('join_room', currentUser.username);
   });
-
   // EVENTO: Recibir mensaje en tiempo real
   socket.on('receive_message', (data) => {
     const { message, chatWith } = data;

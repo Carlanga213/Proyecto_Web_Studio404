@@ -15,7 +15,7 @@ const server = http.createServer(app)
 // 3. Inicializamos Socket.IO adjunto al servidor HTTP
 const io = new Server(server, {
   cors: {
-    origin: "*", // Permitir conexiones desde cualquier origen (útil para desarrollo)
+    origin: "*", // Permitir conexiones desde cualquier origen
     methods: ["GET", "POST"]
   }
 })
@@ -34,23 +34,26 @@ app.use((req, res, next) => {
 const apiRoutes = require('./routes/api')
 app.use('/api', apiRoutes)
 
-// --- CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS (CORREGIDA) ---
+// --- CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ---
 
-// A. Servir la carpeta 'views' para que encuentres los HTMLs directamente en la raíz
-// Ejemplo: http://localhost:3000/chat_section.html
+// A. Servir la carpeta 'views' para encontrar los HTMLs directamente
 app.use(express.static(path.join(__dirname, '..', 'FRONTEND', 'views')))
 
-// B. Servir la carpeta 'FRONTEND' para que carguen los assets, scripts y estilos
-// Ejemplo: http://localhost:3000/controllers/chat_controller.js
+// B. Servir la carpeta 'FRONTEND' para assets, scripts y estilos
 app.use(express.static(path.join(__dirname, '..', 'FRONTEND')))
 
-// -------------------------------------------------------
+// --- CORRECCIÓN: RUTA RAÍZ (Redirect) ---
+// Esto soluciona el error "Cannot GET /"
+app.get('/', (req, res) => {
+  res.redirect('/home_sin_auth.html')
+})
+// ---------------------------------------
 
 // 5. Lógica de conexión de Sockets
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado:', socket.id)
 
-  // Evento: Un usuario se une a su propia "sala" privada usando su username
+  // Evento: Un usuario se une a su propia "sala" privada
   socket.on('join_room', (username) => {
     if (username) {
       socket.join(username)
@@ -63,7 +66,7 @@ io.on('connection', (socket) => {
   })
 })
 
-// 6. Usamos 'server.listen' en lugar de 'app.listen' para que funcionen los sockets
+// 6. Iniciar servidor
 server.listen(PORT, () => {
   console.log(`Server running with Socket.IO on http://localhost:${PORT}`)
 })
