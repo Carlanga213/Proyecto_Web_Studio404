@@ -7,6 +7,7 @@ const comments = require('../controllers/comments_controller')
 const topics = require('../controllers/topics_controller')
 const auth = require('../controllers/auth_controller')
 const profile = require('../controllers/profile_controller')
+const chat = require('../controllers/chat_controller')
 
 // Auth
 router.post('/auth/register', auth.register)
@@ -50,5 +51,10 @@ router.get('/profiles/me', profile.getMe)
 router.put('/profiles/me', profile.updateMe)
 router.delete('/profiles/me', profile.deleteMe)
 router.get('/profiles', profile.listAll)
+
+// CHAT routes
+router.get('/chats', chat.listConversations)          // Listar conversaciones (Inbox)
+router.get('/chats/:targetUser', chat.getHistory)     // Ver mensajes con alguien
+router.post('/chats/:targetUser', chat.sendMessage)   // Enviar mensaje a alguien
 
 module.exports = router
