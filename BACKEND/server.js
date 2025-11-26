@@ -1,37 +1,72 @@
 // BACKEND/server.js
 const express = require('express')
+const cors = require('cors')
 const path = require('path')
+// 1. Importamos módulos para Socket.IO
+const http = require('http')
+const { Server } = require('socket.io')
 
 const app = express()
 const PORT = 3000
 
-// Aumentar límite de JSON para imágenes en base64
-app.use(express.json({ limit: '50mb' }))
+// 2. Creamos el servidor HTTP explícitamente
+const server = http.createServer(app)
 
-// parse JSON body
+// 3. Inicializamos Socket.IO adjunto al servidor HTTP
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Permitir conexiones desde cualquier origen
+    methods: ["GET", "POST"]
+  }
+})
+
+// Middleware para JSON y CORS
+app.use(cors())
 app.use(express.json())
 
-// api routes
+// 4. Middleware para hacer 'io' accesible en los controladores (API)
+app.use((req, res, next) => {
+  req.io = io
+  next()
+})
+
+// Rutas API
 const apiRoutes = require('./routes/api')
 app.use('/api', apiRoutes)
 
-// static files for frontend
-app.use('/assets', express.static(path.join(__dirname, '../FRONTEND/assets')))
-app.use('/controllers', express.static(path.join(__dirname, '../FRONTEND/controllers')))
+// --- CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ---
 
-// 👉 Nuevo: ruta raíz que manda a home_sin_auth.html
+// A. Servir la carpeta 'views' para encontrar los HTMLs directamente
+app.use(express.static(path.join(__dirname, '..', 'FRONTEND', 'views')))
+
+// B. Servir la carpeta 'FRONTEND' para assets, scripts y estilos
+app.use(express.static(path.join(__dirname, '..', 'FRONTEND')))
+
+// --- CORRECCIÓN: RUTA RAÍZ (Redirect) ---
+// Esto soluciona el error "Cannot GET /"
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../FRONTEND/views', 'home_sin_auth.html'))
+  res.redirect('/home_sin_auth.html')
+})
+// ---------------------------------------
+
+// 5. Lógica de conexión de Sockets
+io.on('connection', (socket) => {
+  console.log('Nuevo cliente conectado:', socket.id)
+
+  // Evento: Un usuario se une a su propia "sala" privada
+  socket.on('join_room', (username) => {
+    if (username) {
+      socket.join(username)
+      console.log(`Usuario ${username} unido a la sala: ${username}`)
+    }
+  })
+
+  socket.on('disconnect', () => {
+    console.log('Cliente desconectado:', socket.id)
+  })
 })
 
-// después de eso puedes seguir sirviendo el resto de views estáticas
-app.use('/', express.static(path.join(__dirname, '../FRONTEND/views')))
-
-// health check
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true })
-})
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
+// 6. Iniciar servidor
+server.listen(PORT, () => {
+  console.log(`Server running with Socket.IO on http://localhost:${PORT}`)
 })

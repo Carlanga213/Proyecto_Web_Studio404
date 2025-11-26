@@ -1,7 +1,10 @@
 // FRONTEND/controllers/env.js
 // Global config for frontend
 
-const API_URL = 'http://localhost:3000/api'
+// CAMBIO IMPORTANTE:
+// Usamos window.location.origin para obtener "http://IP:PUERTO" automáticamente.
+// Si entras por localhost, será localhost. Si entras por IP, será la IP.
+const API_URL = window.location.origin + '/api'
 
 function getStoredUser() {
   try {

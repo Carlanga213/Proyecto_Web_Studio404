@@ -1,0 +1,64 @@
+[
+  {
+    "id": 1764122935940,
+    "participants": [
+      "larquitoskool",
+      "Katy"
+    ],
+    "messages": [
+      {
+        "from": "larquitoskool",
+        "text": "hola",
+        "createdAt": "2025-11-26T02:08:55.940Z"
+      }
+    ]
+  },
+  {
+    "id": 1764123082717,
+    "participants": [
+      "larquitoskool",
+      "Cachito"
+    ],
+    "messages": [
+      {
+        "from": "larquitoskool",
+        "text": "prueba 2",
+        "createdAt": "2025-11-26T02:11:22.717Z"
+      }
+    ]
+  },
+  {
+    "id": 1764124286614,
+    "participants": [
+      "larquitoskool",
+      "personaje de relleno"
+    ],
+    "messages": [
+      {
+        "from": "larquitoskool",
+        "text": "hola",
+        "createdAt": "2025-11-26T02:31:26.614Z"
+      },
+      {
+        "from": "personaje de relleno",
+        "text": "hola",
+        "createdAt": "2025-11-26T04:54:29.260Z"
+      },
+      {
+        "from": "larquitoskool",
+        "text": "como estas",
+        "createdAt": "2025-11-26T04:54:43.482Z"
+      },
+      {
+        "from": "personaje de relleno",
+        "text": "algo",
+        "createdAt": "2025-11-26T04:54:59.951Z"
+      },
+      {
+        "from": "larquitoskool",
+        "text": "hola",
+        "createdAt": "2025-11-26T04:55:53.145Z"
+      }
+    ]
+  }
+]
