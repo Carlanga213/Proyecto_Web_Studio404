@@ -232,7 +232,48 @@ function renderSidebarItem(container, user, lastMsg, time, unreadCount = 0) {
 
 // ... Helpers finales ...
 async function markMessagesAsRead(targetUsername) { try { await fetch(`${API_URL}/chats/${targetUsername}/read`, { method: 'PUT', headers: { 'x-user': currentUser.username } }); } catch (err) {} }
-async function loadConversationsList() { const container = document.getElementById('conversationList'); try { const res = await fetch(`${API_URL}/chats`, { headers: { 'x-user': currentUser.username } }); const data = await res.json(); activeConversations = []; container.innerHTML = ''; if (data.ok && data.conversations.length > 0) { document.getElementById('emptyChatMsg').style.display = 'none'; for (const conv of data.conversations) { const userDetails = await fetchProfile(conv.username); userDetails._lastMsg = conv.lastMessage; userDetails._timestamp = conv.timestamp; userDetails._unread = conv.unreadCount; activeConversations.push(userDetails); renderSidebarItem(container, userDetails, conv.lastMessage, conv.timestamp, conv.unreadCount); } } else { container.appendChild(document.getElementById('emptyChatMsg')); document.getElementById('emptyChatMsg').style.display = 'block'; } } catch (err) {} }
+async function loadConversationsList() {
+  const container = document.getElementById('conversationList');
+  // 1. Guardamos el mensaje de vacío en memoria o lo creamos si no existe
+  let emptyMsg = document.getElementById('emptyChatMsg');
+  
+  if (!emptyMsg) {
+    // Si por alguna razón no existe, lo creamos en memoria para usarlo luego
+    emptyMsg = document.createElement('p');
+    emptyMsg.id = 'emptyChatMsg';
+    emptyMsg.className = 'text-muted small text-center mt-4';
+    emptyMsg.innerHTML = 'No active chats.<br>Click <strong>New chat</strong> to start one.';
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/chats`, { headers: { 'x-user': currentUser.username } });
+    const data = await res.json();
+
+    activeConversations = []; 
+    
+    // 2. Limpiamos el contenedor (esto borra el emptyMsg del DOM, pero ya tenemos la referencia en la variable)
+    container.innerHTML = ''; 
+
+    if (data.ok && data.conversations.length > 0) {
+      // SI HAY CHATS: Renderizamos los chats
+      for (const conv of data.conversations) {
+        const userDetails = await fetchProfile(conv.username);
+        userDetails._lastMsg = conv.lastMessage;
+        userDetails._timestamp = conv.timestamp;
+        userDetails._unread = conv.unreadCount;
+        
+        activeConversations.push(userDetails);
+        renderSidebarItem(container, userDetails, conv.lastMessage, conv.timestamp, conv.unreadCount);
+      }
+    } else {
+      // SI NO HAY CHATS: Volvemos a agregar el mensaje de vacío
+      container.appendChild(emptyMsg);
+      emptyMsg.style.display = 'block';
+    }
+  } catch (err) { 
+    console.error('Error loading conversations:', err); 
+  }
+}
 async function loadChatHistory(partnerUser) { const msgContainer = document.getElementById('messagesContainer'); if (msgContainer.dataset.chatWith !== partnerUser.username) { msgContainer.innerHTML = '<div class="text-center text-muted small mt-3">Loading history...</div>'; msgContainer.dataset.chatWith = partnerUser.username; } try { const res = await fetch(`${API_URL}/chats/${partnerUser.username}`, { headers: { 'x-user': currentUser.username } }); const data = await res.json(); if (data.ok) renderMessages(data.messages, partnerUser); } catch (err) {} }
 async function fetchProfile(username) { try { const res = await fetch(`${API_URL}/profiles`); const data = await res.json(); if (data.ok) return data.profiles.find(p => p.username === username) || { username, name: username }; } catch (e) {} return { username, name: username }; }
 function closeChatWindow() { currentChatPartner = null; document.getElementById('activeChatContainer').classList.remove('d-flex'); document.getElementById('activeChatContainer').classList.add('d-none'); document.getElementById('noChatSelected').classList.remove('d-none'); document.getElementById('noChatSelected').classList.add('d-flex'); document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active')); }

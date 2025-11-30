@@ -12,10 +12,21 @@ function getUsername(req) {
 // GET /api/chats
 exports.listConversations = async (req, res) => {
   const username = getUsername(req)
+  
+  // --- AGREGAR ESTOS LOGS PARA DEBUG ---
+  console.log("---------------- DEBUG CHAT ----------------");
+  console.log("1. Usuario solicitando chats:", username);
+  
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
 
   try {
     const chats = await Chat.find({ participants: username });
+    
+    // --- VER QUÉ ENCONTRÓ ---
+    console.log(`2. Chats encontrados en la DB para '${username}':`, chats.length);
+    if(chats.length === 0) {
+       console.log("   (Si es 0, verifica que el nombre en Atlas sea EXACTO al usuario)");
+    }
 
     const previews = chats.map(chat => {
       const otherUser = chat.participants.find(p => p !== username) || username;
