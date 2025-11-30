@@ -43,6 +43,8 @@ app.use('/api', apiRoutes)
 app.use(express.static(path.join(__dirname, '..', 'FRONTEND', 'views')))
 app.use(express.static(path.join(__dirname, '..', 'FRONTEND')))
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+
 app.get('/', (req, res) => {
   res.redirect('/home_sin_auth.html')
 })
