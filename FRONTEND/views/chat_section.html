@@ -15,74 +15,94 @@
         height: 100%;
         margin: 0;
         padding: 0;
-        overflow: hidden; /* Clave: evita que la página entera tenga scroll */
+        overflow: hidden; 
       }
 
-      /* 2. El body es una columna flexible */
       body {
         display: flex;
         flex-direction: column;
+        background-color: var(--bs-body-bg); /* Fondo oscuro */
       }
 
-      /* 3. La Navbar no se encoge ni crece */
+      /* 2. La Navbar tiene su tamaño natural */
       nav.navbar {
         flex: 0 0 auto; 
+        z-index: 1000;
       }
 
-      /* 4. El contenedor del chat crece para llenar el resto del espacio */
+      /* 3. El Wrapper del chat ocupa TODO el espacio restante */
       .chat-wrapper { 
         flex: 1 1 auto; 
-        display: flex;
-        flex-direction: column;
-        overflow: hidden; /* El contenedor general no tiene scroll */
-        height: auto; /* Importante: quitamos altura fija */
+        height: 100%; /* Forzamos altura */
+        overflow: hidden; /* Clave: nada sale de aquí */
+        position: relative;
       }
 
-      /* Aseguramos que la fila interna de bootstrap ocupe todo el alto */
+      /* 4. La fila interna ocupa el 100% */
       .chat-wrapper > .row {
         height: 100%;
-        margin: 0; /* Bootstrap rows a veces tienen márgenes negativos */
+        margin: 0;
       }
 
-      /* 5. Barra Lateral: Scroll independiente */
-      .chat-sidebar { 
-        height: 100%; 
-        overflow-y: auto; /* Scroll vertical si la lista es larga */
+      /* 5. Columnas (Sidebar y Main): Forzamos que sean Flex containers verticales */
+      .chat-wrapper .col-12 {
+        height: 100%;
         display: flex;
         flex-direction: column;
+        padding: 0; 
+        overflow: hidden; 
+      }
+
+      /* Sidebar */
+      .chat-sidebar { 
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden; 
         border-right: 1px solid var(--bs-border-color);
+      }
+      
+      /* Contenedor de la lista de chats (scrollable) */
+      #conversationList {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0; 
       }
 
       /* 6. Área Principal del Chat */
       .chat-main { 
-        height: 100%; 
+        flex: 1;
         display: flex; 
         flex-direction: column; 
-        min-width: 0; /* Previene desbordamientos en flex items */
+        height: 100%;
+        min-height: 0; 
       }
       
-      /* Cabecera del chat (Nombre usuario) */
+      /* Cabecera del chat */
       .chat-header {
         flex: 0 0 auto;
       }
 
-      /* 7. Área de Mensajes: Scroll independiente */
+      /* 7. Área de Mensajes */
       .chat-scroll { 
         flex: 1 1 auto; 
-        overflow-y: auto; /* Aquí es donde ocurre el scroll de mensajes */
+        overflow-y: auto; 
+        min-height: 0; 
         padding: 1rem; 
-        background-color: var(--bs-body-bg);
         scroll-behavior: smooth;
+        display: flex;
+        flex-direction: column;
       }
 
-      /* 8. Composer (Input): Fijo abajo */
+      /* 8. Composer (Input): Siempre visible abajo */
       .composer { 
         flex: 0 0 auto; 
+        z-index: 10;
         border-top: 1px solid var(--bs-border-color); 
         background: var(--bs-body-bg); 
       }
 
-      /* --- Estilos Visuales (Burbujas, Avatares, etc) --- */
+      /* --- Estilos Visuales --- */
       .chat-item { border-radius: .75rem; transition: background-color .15s ease; cursor: pointer; }
       .chat-item.active { background: rgba(13, 110, 253, 0.2); }
       .chat-item:hover { background: rgba(255, 255, 255, 0.05); }
@@ -105,20 +125,29 @@
       .composer .form-control { border-radius: 999px; }
       .btn-circle { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
       
-      /* Ajustes Modales */
       .user-select-item { cursor: pointer; transition: background-color 0.2s; }
       .user-select-item:hover { background-color: var(--bs-tertiary-bg); }
 
-      /* Ajuste para móviles (Safari iOS barra url) */
+      /* --- ESTILOS DEL EMOJI PICKER --- */
+      emoji-picker {
+        position: absolute;
+        bottom: 70px; /* Se abre encima del input */
+        left: 1rem;
+        z-index: 2000;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        border-radius: 0.5rem;
+        /* Variables tema oscuro */
+        --background: #212529; 
+        --border-color: #495057;
+        width: 300px;
+        height: 400px;
+      }
+
       @media (max-width: 991.98px) {
         .chat-wrapper { height: auto; flex: 1; }
+        .chat-main { height: calc(100vh - 130px); } 
       }
     </style>
-
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="/controllers/env.js"></script>
-    <script src="/controllers/chat_controller.js"></script>
-
   </head>
 
   <body id="chatRoot">
@@ -162,9 +191,9 @@
                 <div class="fw-semibold" id="currentUserName">Loading...</div>
                 <div class="small"><span class="status-dot status-online me-1"></span> Online</div>
               </div>
-              <!--<div class="ms-auto">
+              <div class="ms-auto">
                 <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-three-dots"></i></button>
-              </div>-->
+              </div>
             </div>
 
             <div class="input-group mb-3">
@@ -191,7 +220,7 @@
             </div>
 
             <div id="activeChatContainer" class="d-none h-100 flex-column">
-              <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom border-secondary flex-shrink-0">
+              <div class="d-flex align-items-center justify-content-between px-3 py-2 border-bottom border-secondary flex-shrink-0 chat-header">
                 <div class="d-flex align-items-center">
                   <div class="position-relative me-2">
                     <img src="" class="avatar-md" alt="User" id="activeChatAvatar">
@@ -203,18 +232,18 @@
                   </div>
                 </div>
                 <div class="d-flex align-items-center gap-2">
-                <div class="dropdown">
-                  <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-three-dots"></i>
-                  </button>
-                  <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                      <a class="dropdown-item text-danger" href="#" id="btnDeleteChat">
-                        <i class="bi bi-trash me-2"></i>Delete chat
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="bi bi-three-dots"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li>
+                        <a class="dropdown-item text-danger" href="#" id="btnDeleteChat">
+                          <i class="bi bi-trash me-2"></i>Delete chat
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
 
@@ -222,10 +251,19 @@
                 <div class="text-center small text-muted mt-3">Start of conversation</div>
               </div>
 
-              <div class="composer px-3 py-3 flex-shrink-0">
+              <div class="composer px-3 py-3 flex-shrink-0 position-relative">
+                
+                <emoji-picker class="dark d-none" id="emojiPicker"></emoji-picker>
+
                 <form id="messageForm" class="d-flex align-items-center gap-2">
-                  <button class="btn btn-outline-secondary btn-circle" type="button"><i class="bi bi-emoji-smile"></i></button>
-                  <button class="btn btn-outline-secondary btn-circle" type="button"><i class="bi bi-paperclip"></i></button>
+                  <input type="file" id="hiddenFileInput" class="d-none">
+                  
+                  <button class="btn btn-outline-secondary btn-circle" type="button" id="btnEmoji">
+                    <i class="bi bi-emoji-smile"></i>
+                  </button>
+                  
+                  <button class="btn btn-outline-secondary btn-circle" type="button" id="btnAttach"><i class="bi bi-paperclip"></i></button>
+                  
                   <input type="text" class="form-control border-secondary bg-body-tertiary text-light" id="messageInput" placeholder="Type a message" autocomplete="off">
                   <button type="submit" class="btn btn-primary btn-circle"><i class="bi bi-send"></i></button>
                 </form>
@@ -261,6 +299,10 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+
     <script src="/controllers/env.js"></script>
     
     <script src="/controllers/chat_controller.js"></script>
