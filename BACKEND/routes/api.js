@@ -2,9 +2,8 @@
 const express = require('express')
 const router = express.Router()
 const path = require('path')
-const multer = require('multer') // 1. Importar Multer
+const multer = require('multer')
 
-// Importar controladores
 const posts = require('../controllers/posts_controller')
 const comments = require('../controllers/comments_controller')
 const topics = require('../controllers/topics_controller')
@@ -12,22 +11,16 @@ const auth = require('../controllers/auth_controller')
 const profile = require('../controllers/profile_controller')
 const chat = require('../controllers/chat_controller')
 
-// --- 2. CONFIGURACIÓN MULTER ---
+// --- MULTER ---
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Los archivos se guardarán en BACKEND/uploads
     cb(null, path.join(__dirname, '..', 'uploads'))
   },
   filename: (req, file, cb) => {
-    // Nombre único para evitar sobrescribir: fecha + nombre original
-    // Reemplazamos espacios por guiones bajos para evitar problemas de URL
     cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_'))
   }
 })
 const upload = multer({ storage })
-// ----------------------------
-
-// --- RUTAS ---
 
 // Auth
 router.post('/auth/register', auth.register)
@@ -64,20 +57,16 @@ router.put('/profiles/me', profile.updateMe)
 router.delete('/profiles/me', profile.deleteMe)
 router.get('/profiles', profile.listAll)
 
-// --- CHAT ROUTES ---
+// --- CHAT ---
 router.get('/chats', chat.listConversations)
 router.get('/chats/:targetUser', chat.getHistory)
-// Actualizado: Ahora sendMessage recibe datos de archivos
 router.post('/chats/:targetUser', chat.sendMessage)
 router.put('/chats/:targetUser/read', chat.markAsRead)
 router.delete('/chats/:targetUser', chat.deleteConversation)
 
-// --- NUEVA RUTA: SUBIDA DE ARCHIVOS ---
+// --- UPLOAD ---
 router.post('/upload', upload.single('file'), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ ok: false, error: 'No file uploaded' })
-  }
-  // Devolvemos la URL pública del archivo
+  if (!req.file) return res.status(400).json({ ok: false, error: 'No file uploaded' })
   res.json({
     ok: true,
     url: '/uploads/' + req.file.filename,
@@ -85,6 +74,5 @@ router.post('/upload', upload.single('file'), (req, res) => {
     mimetype: req.file.mimetype
   })
 })
-// -------------------------------------
 
 module.exports = router

@@ -1,7 +1,6 @@
 // BACKEND/controllers/chat_controller.js
 const Chat = require('../models/Chat');
 
-// Helper: Obtener usuario
 function getUsername(req) {
   const headerUser = req.headers['x-user']
   if (headerUser && typeof headerUser === 'string' && headerUser.trim() !== '') {
@@ -22,10 +21,8 @@ exports.listConversations = async (req, res) => {
       const otherUser = chat.participants.find(p => p !== username) || username;
       const lastMsg = chat.messages.length > 0 ? chat.messages[chat.messages.length - 1] : null;
       
-      // Contar no leídos
       const unreadCount = chat.messages.filter(m => m.from !== username && !m.read).length;
 
-      // Determinar texto a mostrar en la lista (si es imagen o archivo)
       let previewText = '';
       if (lastMsg) {
         if (lastMsg.type === 'image') previewText = '📷 Image';
@@ -58,18 +55,11 @@ exports.listConversations = async (req, res) => {
 exports.getHistory = async (req, res) => {
   const username = getUsername(req)
   const targetUser = req.params.targetUser
-  
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
 
   try {
-    const chat = await Chat.findOne({
-      participants: { $all: [username, targetUser] }
-    });
-
-    if (!chat) {
-      return res.json({ ok: true, messages: [] });
-    }
-
+    const chat = await Chat.findOne({ participants: { $all: [username, targetUser] } });
+    if (!chat) return res.json({ ok: true, messages: [] });
     res.json({ ok: true, messages: chat.messages });
   } catch (err) {
     console.error(err);
@@ -77,31 +67,24 @@ exports.getHistory = async (req, res) => {
   }
 }
 
-// POST /api/chats/:targetUser
+// POST /api/chats/:targetUser (Enviar)
 exports.sendMessage = async (req, res) => {
   const username = getUsername(req)
   const targetUser = req.params.targetUser
-  
-  // Extraemos nuevos campos del body
   const { text, type, attachmentUrl, originalName } = req.body
 
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
   
-  // Validación: Debe haber texto O un archivo (type != text)
-  // Si es texto puro, validamos que no esté vacío.
   if ((!type || type === 'text') && (!text || text.trim() === '')) {
     return res.status(400).json({ ok: false, error: 'Message empty' })
   }
 
   try {
-    let chat = await Chat.findOne({
-      participants: { $all: [username, targetUser] }
-    });
+    let chat = await Chat.findOne({ participants: { $all: [username, targetUser] } });
 
-    // Construimos el mensaje con todos los datos
     const newMessage = {
       from: username,
-      text: text || '', // Puede ir vacío si es archivo
+      text: text || '',
       type: type || 'text',
       attachmentUrl: attachmentUrl || null,
       originalName: originalName || null,
@@ -110,46 +93,34 @@ exports.sendMessage = async (req, res) => {
     };
 
     if (!chat) {
-      chat = new Chat({
-        participants: [username, targetUser],
-        messages: [newMessage]
-      });
+      chat = new Chat({ participants: [username, targetUser], messages: [newMessage] });
     } else {
       chat.messages.push(newMessage);
     }
 
-    await chat.save();
+    // SI ESTO FALLA (por permisos de IP en Atlas), salta al catch y no envía el socket
+    await chat.save(); 
 
     if (req.io) {
-      req.io.to(targetUser).emit('receive_message', {
-        message: newMessage,
-        chatWith: username
-      });
-      req.io.to(username).emit('receive_message', {
-        message: newMessage,
-        chatWith: targetUser
-      });
+      req.io.to(targetUser).emit('receive_message', { message: newMessage, chatWith: username });
+      req.io.to(username).emit('receive_message', { message: newMessage, chatWith: targetUser });
     }
 
     res.json({ ok: true, message: newMessage });
   } catch (err) {
-    console.error(err);
+    console.error("Error saving message:", err);
     res.status(500).json({ ok: false, error: 'Error sending message' });
   }
 }
 
-// PUT /api/chats/:targetUser/read
+// PUT /read (Marcar leído)
 exports.markAsRead = async (req, res) => {
   const username = getUsername(req);
   const targetUser = req.params.targetUser;
-
   if (!username) return res.status(401).json({ ok: false, error: 'User required' });
 
   try {
-    const chat = await Chat.findOne({
-      participants: { $all: [username, targetUser] }
-    });
-
+    const chat = await Chat.findOne({ participants: { $all: [username, targetUser] } });
     if (chat) {
       let modified = false;
       chat.messages.forEach(msg => {
@@ -162,9 +133,7 @@ exports.markAsRead = async (req, res) => {
       if (modified) {
         await chat.save();
         if (req.io) {
-          req.io.to(targetUser).emit('messages_read_update', {
-            readBy: username
-          });
+          req.io.to(targetUser).emit('messages_read_update', { readBy: username });
         }
       }
     }
@@ -175,27 +144,19 @@ exports.markAsRead = async (req, res) => {
   }
 };
 
-// DELETE /api/chats/:targetUser
+// DELETE
 exports.deleteConversation = async (req, res) => {
   const username = getUsername(req)
   const targetUser = req.params.targetUser
-
   if (!username) return res.status(401).json({ ok: false, error: 'User required' })
 
   try {
-    await Chat.findOneAndDelete({
-      participants: { $all: [username, targetUser] }
-    });
-
+    await Chat.findOneAndDelete({ participants: { $all: [username, targetUser] } });
     if (req.io) {
       [username, targetUser].forEach(u => {
-        req.io.to(u).emit('chat_deleted', { 
-          deletedBy: username,
-          partner: u === username ? targetUser : username 
-        })
+        req.io.to(u).emit('chat_deleted', { deletedBy: username, partner: u === username ? targetUser : username })
       });
     }
-
     res.json({ ok: true });
   } catch (err) {
     console.error(err);
